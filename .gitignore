@@ -1,5 +1,6 @@
 backend/output
 .venv
+.env
 __pycache__
 frontend/archived
 frontend/node_modules
