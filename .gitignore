@@ -1,0 +1,11 @@
+backend/output
+.venv
+__pycache__
+frontend/archived
+frontend/node_modules
+
+.DS_Store
+scenario_generator_tt.egg-info
+frontend/public/simulations
+
+test.geojson

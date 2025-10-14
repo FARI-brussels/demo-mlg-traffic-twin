@@ -1,0 +1,7 @@
+FOR NOW we are using lane to be selected in frontend but edge in the backend
+
+
+TODO : 
+- prevent teleportation
+- accelerate congestion map calculation
+- 3d tunnels
