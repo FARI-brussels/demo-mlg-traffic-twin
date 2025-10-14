@@ -99,11 +99,23 @@ source .venv/bin/activate
 
 ### 2. Install dependencies
 
+The backend is packaged as a Python package with multiple standalone modules. Install in editable mode:
+
 ```bash
+cd backend
 uv sync
 # or
 pip install -e .
+
+# Optional: Install development dependencies
+pip install -e ".[dev]"
 ```
+
+This will install all dependencies including:
+- Flask and Flask-CORS for the API
+- requests, geojson, lxml for data processing
+- numpy, pandas for numerical operations
+- Development tools (pytest, black, ruff) if using `[dev]`
 
 ### 3. Configure SUMO environment
 
@@ -121,9 +133,19 @@ ls $SUMO_HOME/tools/
 
 ### 4. Run the backend server
 
+You can run the backend in several ways:
+
 ```bash
+# Option 1: Direct Python execution
 cd backend
 python main.py
+
+# Option 2: Using the installed package entry point
+scenario-generator
+
+# Option 3: Using Python module execution
+cd backend
+python -m main
 ```
 
 The Flask API will be available at `http://0.0.0.0:8000`
