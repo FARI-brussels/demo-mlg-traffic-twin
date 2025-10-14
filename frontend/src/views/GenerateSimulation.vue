@@ -769,7 +769,7 @@ onMounted(async () => {
   await loadAvailableNetworks()
 
   // Auto-select brussels_main_roads
-  selectedNetwork.value = 'brussels_main_roads'
+  selectedNetwork.value = 'tulipe'
   await loadSelectedNetwork()
   networkLoading.value = false
 })

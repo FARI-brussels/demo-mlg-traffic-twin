@@ -33,18 +33,12 @@ brew install git-lfs
 # Initialize Git LFS
 git lfs install
 
-# Pull LFS files after cloning
-git lfs pull
+git clone https://github.com/FARI-brussels/demo-mlg-traffic-twin.git
 ```
 
-The following file types are tracked with Git LFS:
-- `*.json`
-- `*.geojson`
-- `*.xml`
+## Project Structure 
 
-## Project Structure
-
-```
+```bash
 demo-mlg-traffic-twin/
 ├── backend/                  # Python Flask API
 │   ├── main.py              # Main Flask application
@@ -86,8 +80,8 @@ The backend uses Flask to provide an API for running SUMO simulations and proces
 Using `uv` (recommended):
 
 ```bash
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv sync
+source .venv/bin/activate
 ```
 
 Or using standard Python:
@@ -95,21 +89,9 @@ Or using standard Python:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-### 2. Install dependencies
-
-The backend is packaged as a Python package with multiple standalone modules. Install in editable mode:
-
-```bash
-cd backend
-uv sync
-# or
 pip install -e .
-
-# Optional: Install development dependencies
-pip install -e ".[dev]"
 ```
+
 
 This will install all dependencies including:
 - Flask and Flask-CORS for the API
@@ -139,13 +121,6 @@ You can run the backend in several ways:
 # Option 1: Direct Python execution
 cd backend
 python main.py
-
-# Option 2: Using the installed package entry point
-scenario-generator
-
-# Option 3: Using Python module execution
-cd backend
-python -m main
 ```
 
 The Flask API will be available at `http://0.0.0.0:8000`
