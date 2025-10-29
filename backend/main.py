@@ -170,7 +170,7 @@ def run_sumo(
         "--tripinfo-output.write-unfinished", "true",
         "--edgedata-output", str(edgedata_out),
         "--device.emissions.probability", "1.0",
-        "--device.fcd.period", "1.5",
+        #"--device.fcd.period", "1.5",
         #"--time-to-teleport.disconnected", "-1",  # This is the correct option
          "--ignore-route-errors", # This line is now removed
     ]
