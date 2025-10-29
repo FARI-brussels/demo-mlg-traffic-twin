@@ -7,6 +7,7 @@ from pathlib import Path
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 from typing import List, Optional, Dict, Any
+import traceback
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -65,7 +66,13 @@ def shutil_which(cmd: str) -> Optional[str]:
 
 
 def run(cmd: List[str], cwd: Optional[Path] = None) -> None:
-    subprocess.run(cmd, cwd=str(cwd) if cwd else None, check=True)
+    subprocess.run(
+        cmd,
+        cwd=str(cwd) if cwd else None,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def build_output_paths(base_dir: Path, output_dir: str = "output") -> Dict[str, Path]:
@@ -251,6 +258,23 @@ def convert_fcd_to_outputs(base_dir: Path, fcd_with: Path, fcd_wout: Path, trips
         ],
     )
 
+
+def json_error_response(e: Exception, status_code: int = 500):
+    tb = traceback.format_exc()
+    payload: Dict[str, Any] = {
+        "error": str(e),
+        "error_type": type(e).__name__,
+        "error_stack": tb,
+    }
+    if isinstance(e, subprocess.CalledProcessError):
+        cmd_list = e.cmd if isinstance(e.cmd, list) else [str(e.cmd)]
+        payload.update({
+            "cmd": " ".join(cmd_list),
+            "returncode": e.returncode,
+            "stdout": e.stdout,
+            "stderr": e.stderr,
+        })
+    return jsonify(payload), status_code
 
 @app.route("/simulate", methods=["POST"])
 def simulate() -> Any:
@@ -466,11 +490,9 @@ def simulate() -> Any:
         )
 
     except subprocess.CalledProcessError as e:
-        print(e)
-        raise e
-        return jsonify({"error": "Subprocess failed", "cmd": " ".join(e.cmd if isinstance(e.cmd, list) else [str(e.cmd)]), "returncode": e.returncode}), 500
+        return json_error_response(e, 500)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return json_error_response(e, 500)
 
 
 @app.route("/get_current_deviations", methods=["GET"])
@@ -500,8 +522,7 @@ def get_current_deviations() -> Any:
             "features": closed_edges,
         })
     except Exception as e:
-
-        return jsonify({"error": str(e)}), 500
+        return json_error_response(e, 500)
 
 
 @app.route("/generate_network_from_bounding_box", methods=["POST"])
@@ -571,12 +592,11 @@ def generate_network_from_bounding_box() -> Any:
             )
 
     except subprocess.CalledProcessError as e:
-        return jsonify({"error": "Subprocess failed", "cmd": " ".join(e.cmd if isinstance(e.cmd, list) else [str(e.cmd)]), "returncode": e.returncode}), 500
+        return json_error_response(e, 500)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        raise e
-        return jsonify({"error": str(e)}), 500
+        return json_error_response(e, 500)
 
 @app.route("/generate_network_geojson", methods=["POST"])
 def generate_network_geojson() -> Any:
@@ -650,13 +670,9 @@ def generate_network_geojson() -> Any:
         )
 
     except subprocess.CalledProcessError as e:
-        return jsonify({
-            "error": "Subprocess failed",
-            "cmd": " ".join(e.cmd if isinstance(e.cmd, list) else [str(e.cmd)]),
-            "returncode": e.returncode
-        }), 500
+        return json_error_response(e, 500)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return json_error_response(e, 500)
 
 
 def main():

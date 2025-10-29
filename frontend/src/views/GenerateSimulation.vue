@@ -179,6 +179,27 @@ const isDragging = ref(false)
 
 
 
+async function readBackendError(res) {
+  try {
+    const ct = res.headers.get('content-type') || ''
+    if (ct.includes('application/json')) {
+      const body = await res.json()
+      const parts = []
+      if (body.error) parts.push(String(body.error))
+      if (body.stderr) parts.push(String(body.stderr))
+      if (body.stdout) parts.push(String(body.stdout))
+      if (body.error_stack) parts.push(String(body.error_stack))
+      if (!parts.length) parts.push(JSON.stringify(body))
+      return `Backend ${res.status}:\n` + parts.join('\n')
+    } else {
+      const text = await res.text()
+      return `Backend ${res.status}: ${text}`
+    }
+  } catch (_) {
+    return `Backend ${res.status}`
+  }
+}
+
 function timeToSeconds(t) {
   const [h, m, s] = t.split(':').map(Number)
   return h * 3600 + m * 60 + s
@@ -273,7 +294,10 @@ async function handleNetworkUpload(event) {
       body: formData
     })
     
-    if (!res.ok) throw new Error(`Backend error: ${res.status}`)
+    if (!res.ok) {
+      const details = await readBackendError(res)
+      throw new Error(details)
+    }
     
     // Backend now returns a ZIP file
     const blob = await res.blob()
@@ -395,7 +419,10 @@ async function generateNetworkFromBoundingBox(bbox) {
       body: JSON.stringify({ bbox })
     })
     
-    if (!res.ok) throw new Error(`Backend error: ${res.status}`)
+    if (!res.ok) {
+      const details = await readBackendError(res)
+      throw new Error(details)
+    }
     
     // Backend returns a ZIP file
     const blob = await res.blob()
@@ -583,7 +610,10 @@ async function getCurrentDeviations() {
   error.value = ''
   try {
     const res = await fetch('http://localhost:8000/get_current_deviations')
-    if (!res.ok) throw new Error(`Backend error: ${res.status}`)
+    if (!res.ok) {
+      const details = await readBackendError(res)
+      throw new Error(details)
+    }
     const gj = await res.json()
     deviationsData.value = gj
 
@@ -665,7 +695,10 @@ async function simulate() {
       body: formData
     })
 
-    if (!res.ok) throw new Error(`Backend error: ${res.status}`)
+    if (!res.ok) {
+      const details = await readBackendError(res)
+      throw new Error(details)
+    }
     const blob = await res.blob()
     const resultZip = await window.JSZip.loadAsync(blob)
 
